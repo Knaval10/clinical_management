@@ -1,7 +1,22 @@
 import React from "react";
-import { Table, Tag } from "antd";
-import type { TableColumnsType } from "antd";
+import { Table } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import { createStyles } from "antd-style";
+
+export interface DataType {
+  key: string;
+  sn: string;
+  uhid: string;
+  patient: string;
+  age: string;
+  time: string;
+  department: string;
+  doctor: string;
+  queue: number;
+  address: string;
+  tags: string[];
+  action: string;
+}
 
 const useStyle = createStyles(({ css, token }) => {
   const { antCls }: any = token;
@@ -21,123 +36,22 @@ const useStyle = createStyles(({ css, token }) => {
   };
 });
 
-interface DataType {
-  key: string;
-  sn: string;
-  uhid: string;
-  patient: string;
-  age: string;
-  time: string;
-  department: string;
-  doctor: string;
-  queue: number;
-  address: string;
-  tags: string[];
-  action: string;
+interface OpdTableProps {
+  data: DataType[];
+  columns: ColumnsType<DataType>;
 }
 
-const columns: TableColumnsType<DataType> = [
-  {
-    title: "S.No.",
-    dataIndex: "sn",
-    key: "sn",
-    render: (text) => <a href="/login">{text}</a>,
-  },
-  {
-    title: "UHID",
-    dataIndex: "uhid",
-    key: "uhid",
-  },
-  {
-    title: "Patient Name",
-    dataIndex: "patient",
-    key: "patient",
-  },
-  {
-    title: "Age/Gender",
-    dataIndex: "age",
-    key: "age",
-  },
-  {
-    title: "Billing Data & Time",
-    dataIndex: "time",
-    key: "time",
-  },
-  {
-    title: "Department",
-    dataIndex: "department",
-    key: "department",
-  },
-  {
-    title: "Doctor Name",
-    dataIndex: "doctor",
-    key: "doctor",
-  },
-  {
-    title: "Queue no.",
-    dataIndex: "queue",
-    key: "queue",
-  },
-  {
-    title: "Address",
-    dataIndex: "address",
-    key: "address",
-  },
-  {
-    title: "Status",
-    key: "status",
-    dataIndex: "status",
-    render: (_, { tags }) => (
-      <>
-        {tags.map((tag) => {
-          let color = tag === "follow up" ? "geekblue" : "green";
-          if (tag === "new") {
-            color = "volcano";
-          }
-          return (
-            <Tag color={color} key={tag} className="capitalize !rounded-xl">
-              {tag}
-            </Tag>
-          );
-        })}
-      </>
-    ),
-  },
-  {
-    title: "Action",
-    fixed: "right",
-    width: 90,
-    render: () => <a>action</a>,
-  },
-];
-
-const dataSource = Array.from({ length: 100 }).map<DataType>((_, i) => ({
-  key: `${i}`,
-  sn: "1",
-  uhid: "1",
-  patient: "Hari Thapa",
-  age: "32/Male",
-  time: "10:00",
-  department: "OPD",
-  doctor: "Ram Thapa",
-  queue: 1,
-  address: "New York No. 1 Lake Park",
-  tags: i % 2 == 0 ? ["follow up"] : i % 3 ? ["free"] : ["new"],
-  action: "Eye",
-}));
-
-const App: React.FC = () => {
+const OpdTable: React.FC<OpdTableProps> = ({ data, columns }) => {
   const { styles } = useStyle();
   return (
-    <Table<DataType>
-      // bordered
+    <Table
       className={styles.customTable}
       columns={columns}
-      dataSource={dataSource}
+      dataSource={data}
       scroll={{ x: "max-content" }}
       pagination={{ pageSize: 10 }}
     />
   );
 };
 
-export default App;
+export default OpdTable;
