@@ -1,8 +1,8 @@
 import React from "react";
-import NewPatients from "./pages/NewPatients";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
+import NewPatients from "./pages/NewPatients";
 
 const App = () => {
   const routes = createBrowserRouter([

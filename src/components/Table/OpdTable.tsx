@@ -4,8 +4,8 @@ import type { ColumnsType } from "antd/es/table";
 import { createStyles } from "antd-style";
 
 export interface DataType {
-  key: string;
-  sn: string;
+  key: number;
+  sn: number;
   uhid: string;
   patient: string;
   age: string;
