@@ -13,7 +13,7 @@ export interface DataType {
   department: string;
   doctor: string;
   queue: number;
-  address: string;
+  record: number | string;
   tags: string[];
   action: string;
 }
@@ -49,7 +49,6 @@ const OpdTable: React.FC<OpdTableProps> = ({ data, columns }) => {
       columns={columns}
       dataSource={data}
       scroll={{ x: "max-content" }}
-      pagination={{ pageSize: 10 }}
     />
   );
 };

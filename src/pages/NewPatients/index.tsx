@@ -7,15 +7,38 @@ import { tableData } from "../../constants/tableData";
 import Date from "../../components/Date";
 import { formatDate } from "../../utils/helperFunction";
 import viewIcon from "../../assets/EyeIcon.svg";
+import stethIcon from "../../assets/stethoscope.svg";
+import filterIcon from "../../assets/bars-filter.svg";
+import hideIcon from "../../assets/hide.png";
+import excelIcon from "../../assets/excel.jpeg";
+
 import {
   AlertOutlined,
   ClockCircleOutlined,
   ExceptionOutlined,
   ExclamationCircleOutlined,
+  HomeOutlined,
+  ReloadOutlined,
+  RightOutlined,
   SearchOutlined,
   UserAddOutlined,
   UserOutlined,
 } from "@ant-design/icons";
+import { Link } from "react-router-dom";
+import { exportToExcel } from "../../utils/downloadExcel";
+
+const uniqueDoctors = new Set(tableData.map((item) => item.doctor));
+const uniqueDoctorsArray = Array.from(uniqueDoctors);
+const selectedDoctors = uniqueDoctorsArray.slice(0, 10);
+
+const modifiedTableData = tableData.map((item) => {
+  const randomIndex = Math.floor(Math.random() * selectedDoctors.length);
+  return {
+    ...item,
+    doctor: selectedDoctors[randomIndex],
+  };
+});
+
 const columns: TableColumnsType<DataType> = [
   {
     title: "S.No.",
@@ -66,10 +89,25 @@ const columns: TableColumnsType<DataType> = [
     align: "center",
   },
   {
-    title: "Address",
-    dataIndex: "address",
-    key: "address",
+    title: "Previous rec.",
+    dataIndex: "record",
+    key: "record",
     align: "center",
+    render: () => (
+      <>
+        <Select
+          defaultValue={tableData.map((item) => item.record)}
+          options={[
+            { value: 1, label: 1 },
+            { value: 2, label: 2 },
+            { value: 3, label: 3 },
+            { value: 4, label: 4 },
+            { value: 5, label: 5 },
+            { value: "5+", label: "5+" },
+          ]}
+        />
+      </>
+    ),
   },
   {
     title: "Status",
@@ -119,7 +157,7 @@ const columns: TableColumnsType<DataType> = [
   },
 ];
 
-const initialData: DataType[] = tableData.map<DataType>((item, i) => ({
+const initialData: DataType[] = modifiedTableData.map<DataType>((item, i) => ({
   key: i,
   sn: item.sn,
   uhid: item.uhid,
@@ -129,7 +167,7 @@ const initialData: DataType[] = tableData.map<DataType>((item, i) => ({
   department: item.department,
   doctor: item.doctor,
   queue: item.queue,
-  address: item.address,
+  record: item.record,
   tags: i % 2 === 0 ? ["follow up"] : i % 3 === 0 ? ["new"] : ["free"],
   action: "Eye",
 }));
@@ -137,17 +175,20 @@ const initialData: DataType[] = tableData.map<DataType>((item, i) => ({
 const NewPatients: React.FC = () => {
   const [searchText, setSearchText] = useState<string>("");
   const [filteredData, setFilteredData] = useState<DataType[]>(initialData);
-  const doctorOptions = tableData.map((item) => ({
-    value: item.doctor,
-    label: item?.doctor,
+
+  const doctorOptions = [
+    ...new Set(modifiedTableData.map((item) => item.doctor)),
+  ].map((item) => ({
+    value: item,
+    label: item,
   }));
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
   const handleDoctorFilter = (value: string) => {
     setSelectedDoctor(value);
-    const filtered = initialData.filter((item) => item.doctor === value);
-    setFilteredData(filtered);
+    // const filtered = initialData.filter((item) => item.doctor === value);
+    // setFilteredData(filtered);
   };
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toLowerCase();
@@ -176,19 +217,35 @@ const NewPatients: React.FC = () => {
       return itemDate >= startDateObj && itemDate <= endDateObj;
     });
   };
-  const handleDateFilter = () => {
+
+  const filterData = () => {
+    let filtered = [...initialData];
+
+    // Apply date filter if both start and end date are set
     if (startDate && endDate) {
-      const filtered = filterByDateRange(initialData, startDate, endDate);
-      setFilteredData(filtered);
+      filtered = filterByDateRange(filtered, startDate, endDate);
     }
+
+    // Apply doctor filter
+    if (selectedDoctor) {
+      filtered = filtered.filter((item) => item.doctor === selectedDoctor);
+    }
+
+    // Apply search text filter
+    if (searchText) {
+      filtered = filtered.filter((item) =>
+        Object.values(item).some((field) =>
+          field.toString().toLowerCase().includes(searchText)
+        )
+      );
+    }
+
+    setFilteredData(filtered);
   };
 
-  // Use effect to trigger filtering when both dates are selected
   useEffect(() => {
-    if (startDate && endDate) {
-      handleDateFilter();
-    }
-  }, [startDate, endDate]);
+    filterData();
+  }, [startDate, endDate, selectedDoctor, searchText]);
 
   // Date input handlers
   const handleStartDateChange = (value: any) => {
@@ -198,51 +255,70 @@ const NewPatients: React.FC = () => {
   const handleEndDateChange = (value: any) => {
     setEndDate(value);
   };
-  console.log("date", startDate, endDate);
+  const handleExport = () => {
+    exportToExcel(filteredData, "New Patients Data");
+  };
   return (
-    <main className="px-10 flex flex-col">
-      <section>
-        home Clinical Management OPD New Patients
-        <div className="flex justify-between">
-          <div className="flex gap-2">
-            <p>Stethoscope</p>
-            <h2>OPD Department</h2>
-            <p>Filter</p>
-            <p>Reload</p>
+    <main className="p-5  flex flex-col">
+      <section className="flex flex-col gap-2">
+        <div className="flex gap-2 font-normal text-[14px] text-gray-400">
+          <HomeOutlined />
+          <RightOutlined />
+          <Link to="">Clinical Mangagement</Link>
+          <RightOutlined />
+          <Link to="">OPD</Link>
+          <RightOutlined />
+          <Link to="">New Patients</Link>
+        </div>
+        <div className="flex flex-col gap-3 md:flex-row justify-between pb-5">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6">
+              <img src={stethIcon} alt="" className="w-full h-full" />
+            </div>
+            <h2 className="font-bold text-xl">OPD Department</h2>
+            <button className="flex gap-2 py-0.5 px-3 border-[0.5px] border-gray-200 rounded-sm shadow-xl cursor-pointer">
+              <img src={filterIcon} alt="" className="w-5" />
+              <p>Filter</p>
+            </button>
+            <button className="py-0.5 px-1.5 shadow-xl border-[0.5px] border-gray-200 rounded-sm cursor-pointer">
+              <ReloadOutlined />
+            </button>
           </div>
           <div className="flex gap-2">
-            <p>Hide filter</p>
-            <p>Download Excel</p>
+            <div className="flex items-center gap-2 py-0.5 px-3 border-[0.5px] border-gray-200 rounded-sm shadow-xl">
+              <img src={hideIcon} alt="" className="w-5" />
+              <p>Hide filter</p>
+            </div>
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-2 py-0.5 px-3 border-[0.5px] border-gray-200 rounded-sm shadow-xl cursor-pointer"
+            >
+              <img src={excelIcon} alt="" className="w-5" />
+              <p>Download Excel</p>
+            </button>
           </div>
         </div>
       </section>
-      <section>
-        <h3>Filter:</h3>
+      <section className="flex flex-col gap-2">
+        <h3 className="text-gray-400">Filter:</h3>
         <div className="flex gap-3">
           <div className="flex flex-col gap-2">
-            <label htmlFor="period">Period</label>
+            <p>Period</p>
             <div className="flex gap-2">
               <Date
                 value={startDate}
                 onChange={handleStartDateChange}
-                placeholder="Start Date"
+                placeholder="From Date"
               />
               <Date
                 value={endDate}
                 onChange={handleEndDateChange}
-                placeholder="End Date"
+                placeholder="To Date"
               />
-
-              {/* <button
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-red-400"
-                onClick={handleDateFilter}
-              >
-                Apply
-              </button> */}
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <label htmlFor="period">Filter Via Doctor</label>
+            <p>Filter Via Doctor</p>
             <Select
               value={selectedDoctor}
               options={doctorOptions}
@@ -255,41 +331,46 @@ const NewPatients: React.FC = () => {
       <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 pt-3">
         <OpdCard
           title="New Patients"
-          count={0}
+          count={20}
           aboutIcon={false}
           queue={false}
           icon={<UserOutlined />}
+          queueCount={""}
         />
         <OpdCard
-          title="New Patients"
-          count={0}
+          title="Average Wait Time"
+          count={30}
           aboutIcon={<ExclamationCircleOutlined />}
           queue={false}
           icon={<ClockCircleOutlined />}
+          queueCount={""}
         />
         <OpdCard
-          title="New Patients"
-          count={0}
+          title="Patients in Queue"
+          count={25}
           aboutIcon={false}
-          queue={false}
+          queue={true}
           icon={<UserAddOutlined />}
+          queueCount={"11 - 12"}
         />
         <OpdCard
-          title="New Patients"
-          count={0}
+          title="Cancellations"
+          count={10}
           aboutIcon={false}
           queue={false}
           icon={<ExceptionOutlined />}
+          queueCount={""}
         />
         <OpdCard
-          title="New Patients"
-          count={0}
+          title="Urgent Cases"
+          count={10}
           aboutIcon={false}
-          queue={false}
+          queue={true}
           icon={<AlertOutlined />}
+          queueCount={"4 - 14"}
         />
       </section>
-      <section className="py-5 grid grid-cols-2 sm:grid-cols-4 gap-2 w-[45%]">
+      <section className="py-5 flex flex-wrap gap-2 ">
         <StatCard title={"Nurse"} count={0} />
         <StatCard title={"Nurse"} count={0} />
         <StatCard title={"Nurse"} count={0} />

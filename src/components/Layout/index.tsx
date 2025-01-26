@@ -4,7 +4,7 @@ import Navbar from "./Navbar";
 const Layout = ({ children }: any) => {
   return (
     <div className="flex flex-col gap-2">
-      <Navbar />
+      {/* <Navbar /> */}
       <div className="">{children}</div>
     </div>
   );
