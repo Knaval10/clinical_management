@@ -4,11 +4,12 @@ import "./card.css";
 interface propsType {
   title: string;
   count: number;
+  className: any;
 }
 
-const StatCard = ({ title, count }: propsType) => {
+const StatCard = ({ title, count, className }: propsType) => {
   return (
-    <Card style={{ minWidth: 100 }} className="stat">
+    <Card style={{ minWidth: 100 }} className={`stat ${className}`}>
       <article className="flex gap-1">
         <p>{title}</p>
         <p>{`(${count})`}</p>

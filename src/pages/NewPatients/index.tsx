@@ -11,7 +11,6 @@ import stethIcon from "../../assets/stethoscope.svg";
 import filterIcon from "../../assets/bars-filter.svg";
 import hideIcon from "../../assets/hide.png";
 import excelIcon from "../../assets/excel.jpeg";
-
 import {
   AlertOutlined,
   ClockCircleOutlined,
@@ -27,6 +26,7 @@ import {
 import { Link } from "react-router-dom";
 import { exportToExcel } from "../../utils/downloadExcel";
 
+//unique doctor array from tableData imported from constants
 const uniqueDoctors = new Set(tableData.map((item) => item.doctor));
 const uniqueDoctorsArray = Array.from(uniqueDoctors);
 const selectedDoctors = uniqueDoctorsArray.slice(0, 10);
@@ -39,6 +39,7 @@ const modifiedTableData = tableData.map((item) => {
   };
 });
 
+//Table Columns
 const columns: TableColumnsType<DataType> = [
   {
     title: "S.No.",
@@ -157,6 +158,7 @@ const columns: TableColumnsType<DataType> = [
   },
 ];
 
+// Data keys modification for ant-table
 const initialData: DataType[] = modifiedTableData.map<DataType>((item, i) => ({
   key: i,
   sn: item.sn,
@@ -176,21 +178,24 @@ const NewPatients: React.FC = () => {
   const [searchText, setSearchText] = useState<string>("");
   const [filteredData, setFilteredData] = useState<DataType[]>(initialData);
 
+  //Doctor options
   const doctorOptions = [
     ...new Set(modifiedTableData.map((item) => item.doctor)),
   ].map((item) => ({
     value: item,
     label: item,
   }));
+
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
 
+  // Doctor filter function
   const handleDoctorFilter = (value: string) => {
     setSelectedDoctor(value);
-    // const filtered = initialData.filter((item) => item.doctor === value);
-    // setFilteredData(filtered);
   };
+
+  //Modules and data search function
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toLowerCase();
     setSearchText(value);
@@ -200,9 +205,10 @@ const NewPatients: React.FC = () => {
         field.toString().toLowerCase().includes(value)
       )
     );
-    console.log("filtered", filtered);
     setFilteredData(filtered);
   };
+
+  //Date range filter function
   const filterByDateRange = (
     data: DataType[],
     start: string | null,
@@ -219,20 +225,18 @@ const NewPatients: React.FC = () => {
     });
   };
 
+  // Start and end date filter function
   const filterData = () => {
     let filtered = [...initialData];
 
-    // Apply date filter if both start and end date are set
     if (startDate && endDate) {
       filtered = filterByDateRange(filtered, startDate, endDate);
     }
 
-    // Apply doctor filter
     if (selectedDoctor) {
       filtered = filtered.filter((item) => item.doctor === selectedDoctor);
     }
 
-    // Apply search text filter
     if (searchText) {
       filtered = filtered.filter((item) =>
         Object.values(item).some((field) =>
@@ -248,7 +252,7 @@ const NewPatients: React.FC = () => {
     filterData();
   }, [startDate, endDate, selectedDoctor, searchText]);
 
-  // Date input handlers
+  // Date input changes handler
   const handleStartDateChange = (value: any) => {
     setStartDate(value);
   };
@@ -256,9 +260,13 @@ const NewPatients: React.FC = () => {
   const handleEndDateChange = (value: any) => {
     setEndDate(value);
   };
+
+  //Excel file download function
   const handleExport = () => {
     exportToExcel(filteredData, "New Patients Data");
   };
+
+  //States for pagination and rows numbers and page display
   const [rowsPerPage, setRowsPerPage] = useState(
     filteredData?.length >= 10 ? 10 : filterData.length
   );
@@ -267,13 +275,15 @@ const NewPatients: React.FC = () => {
     const value = parseInt(e.target.value, 10);
     setRowsPerPage(value > 0 ? value : 10);
   };
+
+  //Page changing function
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
   return (
     <main className="p-5  flex flex-col">
       <section className="flex flex-col gap-2">
-        <div className="flex gap-2 font-normal text-[14px] text-gray-400">
+        <div className="flex gap-1 sm:gap-2 font-normal text-[12px] sm:text-sm text-gray-400">
           <HomeOutlined />
           <RightOutlined />
           <Link to="">Clinical Mangagement</Link>
@@ -287,10 +297,10 @@ const NewPatients: React.FC = () => {
             <div className="w-6 h-6">
               <img src={stethIcon} alt="" className="w-full h-full" />
             </div>
-            <h2 className="font-bold text-xl">OPD Department</h2>
+            <h2 className="font-bold sm:text-xl">OPD Department</h2>
             <button className="flex gap-2 py-0.5 px-3 border-[0.5px] border-gray-200 rounded-sm shadow-xl cursor-pointer">
               <img src={filterIcon} alt="" className="w-5" />
-              <p>Filter</p>
+              <p className="text-sm sm:text-base">Filter</p>
             </button>
             <button className="py-0.5 px-1.5 shadow-xl border-[0.5px] border-gray-200 rounded-sm cursor-pointer">
               <ReloadOutlined />
@@ -299,23 +309,23 @@ const NewPatients: React.FC = () => {
           <div className="flex gap-2">
             <div className="flex items-center gap-2 py-0.5 px-3 border-[0.5px] border-gray-200 rounded-sm shadow-xl">
               <img src={hideIcon} alt="" className="w-5" />
-              <p>Hide filter</p>
+              <p className="text-sm sm:text-base">Hide filter</p>
             </div>
             <button
               onClick={handleExport}
               className="flex items-center gap-2 py-0.5 px-3 border-[0.5px] border-gray-200 rounded-sm shadow-xl cursor-pointer"
             >
               <img src={excelIcon} alt="" className="w-5" />
-              <p>Download Excel</p>
+              <p className="text-sm sm:text-base">Download Excel</p>
             </button>
           </div>
         </div>
       </section>
       <section className="flex flex-col gap-2">
         <h3 className="text-gray-400">Filter:</h3>
-        <div className="flex gap-3">
+        <div className="flex flex-col min-[520px]:flex-row gap-3">
           <div className="flex flex-col gap-2">
-            <p>Period</p>
+            <p className="text-sm sm:text-base">Period</p>
             <div className="flex gap-2">
               <Date
                 value={startDate}
@@ -329,8 +339,10 @@ const NewPatients: React.FC = () => {
               />
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <p>Filter Via Doctor</p>
+          <div className="flex flex-col gap-2 max-[519px]:w-1/3">
+            <p className="whitespace-nowrap text-sm sm:text-base">
+              Filter Via Doctor
+            </p>
             <Select
               value={selectedDoctor}
               options={doctorOptions}
@@ -383,13 +395,17 @@ const NewPatients: React.FC = () => {
         />
       </section>
       <section className="py-5 flex flex-wrap gap-2 ">
-        <StatCard title={"Nurse"} count={0} />
-        <StatCard title={"Nurse"} count={0} />
-        <StatCard title={"Nurse"} count={0} />
-        <StatCard title={"Nurse"} count={0} />
+        <StatCard
+          title={"New Patients"}
+          count={12}
+          className={"!bg-blue-400"}
+        />
+        <StatCard title={"Nurse Seen"} count={4} className={undefined} />
+        <StatCard title={"Doctor Visited"} count={6} className={undefined} />
+        <StatCard title={"Appointment"} count={6} className={undefined} />
       </section>
       <section className="flex flex-col gap-5">
-        <div className="flex justify-between">
+        <div className="flex flex-col min-[420px]:flex-row justify-between gap-3">
           <div className="flex gap-[0.5px]">
             <div className="border-2 border-gray-200 rounded-l-lg p-1">
               <SearchOutlined />
@@ -400,10 +416,10 @@ const NewPatients: React.FC = () => {
               onChange={handleSearch}
               allowClear
               placeholder="Search modules or data"
-              style={{ width: "32%" }}
+              className="!w-[100%]"
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center self-end gap-2">
             <p className="text-gray-400 text-sm">Show</p>
             <input
               type="number"
@@ -425,7 +441,7 @@ const NewPatients: React.FC = () => {
               total: filteredData.length,
             }}
           />
-          <div className="absolute bottom-5 text-gray-400 hidden sm:block">
+          <div className="absolute flex justify-center bottom-13.5 sm:bottom-5 text-gray-400">
             {filteredData.length > 0
               ? `Showing ${(currentPage - 1) * rowsPerPage + 1} - ${Math.min(
                   currentPage * rowsPerPage,
