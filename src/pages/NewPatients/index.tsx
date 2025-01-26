@@ -185,6 +185,7 @@ const NewPatients: React.FC = () => {
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
+
   const handleDoctorFilter = (value: string) => {
     setSelectedDoctor(value);
     // const filtered = initialData.filter((item) => item.doctor === value);
@@ -257,6 +258,17 @@ const NewPatients: React.FC = () => {
   };
   const handleExport = () => {
     exportToExcel(filteredData, "New Patients Data");
+  };
+  const [rowsPerPage, setRowsPerPage] = useState(
+    filteredData?.length >= 10 ? 10 : filterData.length
+  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const handleRowsChange = (e: any) => {
+    const value = parseInt(e.target.value, 10);
+    setRowsPerPage(value > 0 ? value : 10);
+  };
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
   return (
     <main className="p-5  flex flex-col">
@@ -377,20 +389,51 @@ const NewPatients: React.FC = () => {
         <StatCard title={"Nurse"} count={0} />
       </section>
       <section className="flex flex-col gap-5">
-        <div className="flex gap-[0.5px]">
-          <div className="border-2 border-gray-200 rounded-l-lg p-1">
-            <SearchOutlined />
+        <div className="flex justify-between">
+          <div className="flex gap-[0.5px]">
+            <div className="border-2 border-gray-200 rounded-l-lg p-1">
+              <SearchOutlined />
+            </div>
+            <Input
+              type="text"
+              value={searchText}
+              onChange={handleSearch}
+              allowClear
+              placeholder="Search modules or data"
+              style={{ width: "32%" }}
+            />
           </div>
-          <Input
-            type="text"
-            value={searchText}
-            onChange={handleSearch}
-            allowClear
-            placeholder="Search modules or data"
-            style={{ width: "32%" }}
-          />
+          <div className="flex items-center gap-2">
+            <p className="text-gray-400 text-sm">Show</p>
+            <input
+              type="number"
+              value={rowsPerPage}
+              onChange={handleRowsChange}
+              className="border-[0.5px] rounded-lg border-gray-300 p-1 w-14 text-center"
+            />
+          </div>
         </div>
-        <OpdTable data={filteredData} columns={columns} />
+        <div className="relative">
+          <OpdTable
+            data={filteredData}
+            columns={columns}
+            pagination={{
+              pageSize: rowsPerPage,
+              showSizeChanger: false,
+              current: currentPage,
+              onChange: handlePageChange,
+              total: filteredData.length,
+            }}
+          />
+          <div className="absolute bottom-5 text-gray-400 hidden sm:block">
+            {filteredData.length > 0
+              ? `Showing ${(currentPage - 1) * rowsPerPage + 1} - ${Math.min(
+                  currentPage * rowsPerPage,
+                  filteredData.length
+                )} of ${filteredData.length} entries`
+              : "Showing 0 of 0 entries"}
+          </div>
+        </div>
       </section>
     </main>
   );

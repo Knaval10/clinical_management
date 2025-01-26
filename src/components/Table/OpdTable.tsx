@@ -39,9 +39,10 @@ const useStyle = createStyles(({ css, token }) => {
 interface OpdTableProps {
   data: DataType[];
   columns: ColumnsType<DataType>;
+  pagination: any;
 }
 
-const OpdTable: React.FC<OpdTableProps> = ({ data, columns }) => {
+const OpdTable: React.FC<OpdTableProps> = ({ data, columns, pagination }) => {
   const { styles } = useStyle();
   return (
     <Table
@@ -49,6 +50,7 @@ const OpdTable: React.FC<OpdTableProps> = ({ data, columns }) => {
       columns={columns}
       dataSource={data}
       scroll={{ x: "max-content" }}
+      pagination={pagination}
     />
   );
 };
